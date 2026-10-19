@@ -1,0 +1,924 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARK — Leave Your Mark</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101114;
+  --panel: #191a20;
+  --border: #30313a;
+  --muted: #9698a5;
+  --text: #f5f5f7;
+  --accent: #8d75ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+button, input { font: inherit; }
+
+header {
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--border);
+  background: #15161a;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.logo {
+  display: grid;
+  grid-template-columns: repeat(3, 8px);
+  gap: 3px;
+  transform: rotate(-7deg);
+}
+
+.logo span {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+}
+
+.logo span:nth-child(2),
+.logo span:nth-child(4) { opacity: .5; }
+
+h1 {
+  font-size: 21px;
+  margin: 0;
+  letter-spacing: 3px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.online {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #55df91;
+}
+
+#connection {
+  color: #ffbc70;
+}
+
+main {
+  height: calc(100vh - 66px);
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+
+aside {
+  padding: 20px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--muted);
+  letter-spacing: 1.3px;
+  margin-bottom: 12px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #101115;
+  color: white;
+  outline: none;
+}
+
+input:focus { border-color: var(--accent); }
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+}
+
+.swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid #ffffff20;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: transform .1s, border-color .1s;
+}
+
+.swatch:hover { transform: scale(1.08); }
+
+.swatch.selected {
+  outline: 2px solid white;
+  outline-offset: 2px;
+  border-color: white;
+}
+
+.ink-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  background: #111216;
+}
+
+.ink-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+#inkCount {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ink-track {
+  height: 8px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #33343d;
+}
+
+#inkBar {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transition: width .2s;
+}
+
+#inkInfo {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.selected-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#colorPreview {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #ffffff55;
+}
+
+.help {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.workspace {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: #0b0c0f;
+  overflow: hidden;
+}
+
+#board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.canvas-label {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 9px 12px;
+  background: #17181edb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.canvas-label span { color: var(--muted); }
+
+.tools {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  background: #191a20ed;
+  border-radius: 10px;
+}
+
+.tools button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  background: #24252d;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tools button:hover { background: #353641; }
+
+#zoomLabel {
+  width: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.toast {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 15px;
+  border-radius: 8px;
+  background: #272832;
+  border: 1px solid #41424c;
+  color: white;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show { opacity: 1; }
+
+@media (max-width: 650px) {
+  header {
+    height: 58px;
+    padding: 0 12px;
+  }
+
+  h1 { font-size: 18px; }
+
+  .subtitle { display: none; }
+
+  .status { gap: 9px; font-size: 11px; }
+
+  main {
+    height: calc(100vh - 58px);
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .workspace {
+    grid-row: 1;
+    min-height: 0;
+  }
+
+  aside {
+    grid-row: 2;
+    padding: 10px 12px;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: 225px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .section { margin: 0; }
+
+  .section.colors { grid-row: span 2; }
+
+  .palette { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+
+  .swatch { border-radius: 5px; }
+
+  .help { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+    </div>
+    <div>
+      <h1>MARK</h1>
+      <div class="subtitle">A canvas made by everyone.</div>
+    </div>
+  </div>
+
+  <div class="status">
+    <div class="online">
+      <span class="dot"></span>
+      <span id="onlineCount">0 online</span>
+    </div>
+    <span id="connection">Connecting...</span>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <section class="section">
+      <div class="section-title">YOUR IDENTITY</div>
+      <label for="username">Display name</label>
+      <input id="username" maxlength="16" value="Player" autocomplete="nickname">
+    </section>
+
+    <section class="section colors">
+      <div class="section-title">PICK A COLOR</div>
+      <div id="palette" class="palette"></div>
+      <div class="selected-color" style="margin-top:16px">
+        <div id="colorPreview"></div>
+        <span id="colorName">White</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">YOUR INK</div>
+      <div class="ink-panel">
+        <div class="ink-heading">
+          <span>Available pixels</span>
+          <span id="inkCount">20/20</span>
+        </div>
+        <div class="ink-track"><div id="inkBar"></div></div>
+        <div id="inkInfo">Connect to start drawing.</div>
+      </div>
+    </section>
+
+    <section class="section help">
+      <div class="section-title">HOW TO DRAW</div>
+      Click a pixel to place it.<br>
+      Scroll to zoom in or out.<br>
+      Right-click and drag to pan.<br>
+      Other players can overwrite your pixels.<br>
+      One ink regenerates every 5 seconds.
+    </section>
+  </aside>
+
+  <div class="workspace" id="workspace">
+    <canvas id="board"></canvas>
+
+    <div class="canvas-label">
+      <strong>THE CANVAS</strong><br>
+      <span>200 × 200 pixels</span>
+    </div>
+
+    <div class="tools">
+      <button id="zoomOut" title="Zoom out">−</button>
+      <span id="zoomLabel">400%</span>
+      <button id="zoomIn" title="Zoom in">+</button>
+      <button id="resetView" title="Reset view">⌂</button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+</main>
+
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  // For GitHub Pages, replace this with your Render server URL.
+  // Example: https://your-mark-server.onrender.com
+  // Leave empty when the website is served by the Node.js server itself.
+  const SERVER_URL = "";
+
+  const SIZE = 200;
+  const MAX_INK = 20;
+  const INK_INTERVAL = 5000;
+
+  const COLORS = [
+    ["#ffffff", "White"],
+    ["#c2c2c2", "Silver"],
+    ["#888888", "Gray"],
+    ["#444444", "Dark gray"],
+    ["#000000", "Black"],
+    ["#ff0000", "Red"],
+    ["#ff6a00", "Orange"],
+    ["#ffcc00", "Gold"],
+    ["#ffff00", "Yellow"],
+    ["#80ff00", "Lime"],
+    ["#00cc44", "Green"],
+    ["#00ffcc", "Mint"],
+    ["#00ccff", "Cyan"],
+    ["#0066ff", "Blue"],
+    ["#6633ff", "Indigo"],
+    ["#aa44ff", "Purple"],
+    ["#ff44cc", "Pink"],
+    ["#ff99cc", "Light pink"],
+    ["#8b4513", "Brown"],
+    ["#ffb080", "Peach"],
+    ["#6b3e26", "Dark brown"],
+    ["#b7e4c7", "Pale green"],
+    ["#f4a261", "Apricot"],
+    ["#264653", "Deep teal"]
+  ];
+
+  const canvas = document.getElementById("board");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const workspace = document.getElementById("workspace");
+  const palette = document.getElementById("palette");
+
+  const playerId = (() => {
+    let id = localStorage.getItem("mark-player-id");
+
+    if (!id) {
+      id = "p_" + crypto.randomUUID().replace(/-/g, "");
+      localStorage.setItem("mark-player-id", id);
+    }
+
+    return id;
+  })();
+
+  let playerName = localStorage.getItem("mark-player-name") || "Player";
+  let selectedColor = COLORS[0][0];
+  let ink = MAX_INK;
+  let maxInk = MAX_INK;
+  let nextInkIn = 0;
+  let lastInkUpdate = Date.now();
+
+  let socket = null;
+  let connected = false;
+  let boardReady = false;
+  let pixels = Object.create(null);
+
+  let camera = {
+    x: SIZE / 2,
+    y: SIZE / 2,
+    scale: 4
+  };
+
+  let dragging = false;
+  let dragMoved = false;
+  let dragButton = -1;
+  let lastPointer = { x: 0, y: 0 };
+  let toastTimer = null;
+  let drawQueued = false;
+
+  const username = document.getElementById("username");
+  username.value = playerName;
+
+  function makePalette() {
+    for (const [color, name] of COLORS) {
+      const button = document.createElement("button");
+
+      button.className = "swatch";
+      button.style.background = color;
+      button.title = name;
+      button.setAttribute("aria-label", name);
+
+      button.addEventListener("click", () => {
+        selectedColor = color;
+        updatePalette();
+      });
+
+      palette.appendChild(button);
+    }
+
+    updatePalette();
+  }
+
+  function updatePalette() {
+    for (const button of palette.children) {
+      const selected = button.title ===
+        COLORS.find(c => c[0] === selectedColor)[1];
+
+      button.classList.toggle("selected", selected);
+    }
+
+    document.getElementById("colorPreview").style.background =
+      selectedColor;
+
+    document.getElementById("colorName").textContent =
+      COLORS.find(c => c[0] === selectedColor)?.[1] || "Color";
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2400);
+  }
+
+  function updateConnection() {
+    const element = document.getElementById("connection");
+
+    if (connected && boardReady) {
+      element.textContent = "Connected";
+      element.style.color = "#55df91";
+    } else {
+      element.textContent = connected ? "Loading board..." : "Reconnecting...";
+      element.style.color = "#ffbc70";
+    }
+  }
+
+  function updateInk(data) {
+    ink = Math.max(0, Math.min(data.ink, MAX_INK));
+    maxInk = data.maxInk || MAX_INK;
+    nextInkIn = data.nextInkIn || 0;
+    lastInkUpdate = Date.now();
+
+    document.getElementById("inkCount").textContent =
+      `${ink}/${maxInk}`;
+
+    document.getElementById("inkBar").style.width =
+      `${(ink / maxInk) * 100}%`;
+
+    document.getElementById("inkInfo").textContent =
+      ink >= maxInk
+        ? "Ink full. Go leave your mark."
+        : `Next ink in ${Math.ceil(nextInkIn / 1000)} seconds.`;
+  }
+
+  function resizeCanvas() {
+    const rect = workspace.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+
+    draw();
+  }
+
+  function screenToWorld(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = canvas.width / rect.width;
+
+    const sx = (clientX - rect.left) * dpr;
+    const sy = (clientY - rect.top) * dpr;
+
+    const scale = camera.scale * dpr;
+
+    return {
+      x: (sx - canvas.width / 2) / scale + camera.x,
+      y: (sy - canvas.height / 2) / scale + camera.y
+    };
+  }
+
+  function draw() {
+    if (drawQueued) return;
+
+    drawQueued = true;
+
+    requestAnimationFrame(() => {
+      drawQueued = false;
+      render();
+    });
+  }
+
+  function render() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const scale = camera.scale * dpr;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#0b0c0f";
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+
+    ctx.translate(
+      w / 2 - camera.x * scale,
+      h / 2 - camera.y * scale
+    );
+
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "#191a20";
+    ctx.fillRect(0, 0, SIZE, SIZE);
+
+    const startX = Math.max(0, Math.floor(camera.x - w / (2 * scale)));
+    const startY = Math.max(0, Math.floor(camera.y - h / (2 * scale)));
+    const endX = Math.min(SIZE, Math.ceil(camera.x + w / (2 * scale)));
+    const endY = Math.min(SIZE, Math.ceil(camera.y + h / (2 * scale)));
+
+    for (const key in pixels) {
+      const parts = key.split(",");
+      const x = Number(parts[0]);
+      const y = Number(parts[1]);
+
+      if (x < startX || x >= endX || y < startY || y >= endY) {
+        continue;
+      }
+
+      ctx.fillStyle = pixels[key];
+      ctx.fillRect(x, y, 1, 1);
+    }
+
+    if (scale >= 7) {
+      ctx.beginPath();
+      ctx.strokeStyle = "#ffffff12";
+      ctx.lineWidth = 1 / scale;
+
+      for (let x = startX; x <= endX; x++) {
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, endY);
+      }
+
+      for (let y = startY; y <= endY; y++) {
+        ctx.moveTo(startX, y);
+        ctx.lineTo(endX, y);
+      }
+
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "#656674";
+    ctx.lineWidth = 1.5 / scale;
+    ctx.strokeRect(0, 0, SIZE, SIZE);
+
+    ctx.restore();
+
+    document.getElementById("zoomLabel").textContent =
+      `${Math.round(camera.scale * 100)}%`;
+  }
+
+  function setZoom(newScale, clientX, clientY) {
+    const oldScale = camera.scale;
+    newScale = Math.max(1, Math.min(32, newScale));
+
+    if (clientX !== undefined && clientY !== undefined) {
+      const before = screenToWorld(clientX, clientY);
+      camera.scale = newScale;
+      const after = screenToWorld(clientX, clientY);
+
+      camera.x += before.x - after.x;
+      camera.y += before.y - after.y;
+    } else {
+      camera.scale = newScale;
+    }
+
+    draw();
+  }
+
+  function resetView() {
+    camera.x = SIZE / 2;
+    camera.y = SIZE / 2;
+    camera.scale = Math.min(
+      workspace.clientWidth / SIZE,
+      workspace.clientHeight / SIZE
+    );
+
+    camera.scale = Math.max(1, Math.min(camera.scale, 32));
+    draw();
+  }
+
+  function placePixel(clientX, clientY) {
+    if (!connected || !boardReady || !socket) {
+      showToast("Wait for the canvas to connect.");
+      return;
+    }
+
+    if (ink < 1) {
+      showToast("Out of ink. Wait for it to refill.");
+      return;
+    }
+
+    const world = screenToWorld(clientX, clientY);
+    const x = Math.floor(world.x);
+    const y = Math.floor(world.y);
+
+    if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
+      return;
+    }
+
+    socket.emit("placePixel", {
+      x,
+      y,
+      color: selectedColor
+    });
+  }
+
+  function connect() {
+    const url = SERVER_URL.trim() || window.location.origin;
+
+    socket = io(url, {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000
+    });
+
+    socket.on("connect", () => {
+      connected = true;
+      boardReady = false;
+      updateConnection();
+
+      socket.emit("identify", {
+        id: playerId,
+        name: playerName
+      });
+    });
+
+    socket.on("disconnect", () => {
+      connected = false;
+      boardReady = false;
+      updateConnection();
+    });
+
+    socket.on("connect_error", () => {
+      connected = false;
+      updateConnection();
+    });
+
+    socket.on("boardInit", (data) => {
+      pixels = Object.create(null);
+
+      for (const [key, color] of Object.entries(data.pixels || {})) {
+        pixels[key] = color;
+      }
+
+      boardReady = true;
+      updateConnection();
+      draw();
+    });
+
+    socket.on("pixelPlaced", (data) => {
+      pixels[`${data.x},${data.y}`] = data.color;
+      draw();
+    });
+
+    socket.on("inkUpdate", updateInk);
+
+    socket.on("placementError", (data) => {
+      showToast(data.message || "Could not place pixel.");
+    });
+
+    socket.on("onlineCount", (count) => {
+      document.getElementById("onlineCount").textContent =
+        `${count} online`;
+    });
+  }
+
+  username.addEventListener("change", () => {
+    playerName = username.value
+      .replace(/[<>]/g, "")
+      .trim()
+      .slice(0, 16) || "Player";
+
+    username.value = playerName;
+    localStorage.setItem("mark-player-name", playerName);
+
+    if (socket && connected) {
+      socket.emit("identify", {
+        id: playerId,
+        name: playerName
+      });
+    }
+  });
+
+  canvas.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    if (event.button === 2 || event.button === 1 || event.shiftKey) {
+      dragging = true;
+      dragMoved = false;
+      dragButton = event.button;
+      lastPointer = { x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    } else if (event.button === 0) {
+      placePixel(event.clientX, event.clientY);
+    }
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+
+    const dx = event.clientX - lastPointer.x;
+    const dy = event.clientY - lastPointer.y;
+
+    if (Math.abs(dx) + Math.abs(dy) > 0) {
+      dragMoved = true;
+
+      const rect = canvas.getBoundingClientRect();
+      camera.x -= dx / rect.width * canvas.width / (camera.scale * (canvas.width / rect.width));
+      camera.y -= dy / rect.height * canvas.height / (camera.scale * (canvas.width / rect.width));
+
+      lastPointer = { x: event.clientX, y: event.clientY };
+      draw();
+    }
+  });
+
+  canvas.addEventListener("pointerup", () => {
+    dragging = false;
+    dragButton = -1;
+  });
+
+  canvas.addEventListener("pointercancel", () => {
+    dragging = false;
+    dragButton = -1;
+  });
+
+  canvas.addEventListener("wheel", (event) => {
+    event.preventDefault();
+
+    setZoom(
+      camera.scale * (event.deltaY < 0 ? 1.15 : 1 / 1.15),
+      event.clientX,
+      event.clientY
+    );
+  }, { passive: false });
+
+  document.getElementById("zoomIn").addEventListener("click", () => {
+    setZoom(camera.scale * 1.25);
+  });
+
+  document.getElementById("zoomOut").addEventListener("click", () => {
+    setZoom(camera.scale / 1.25);
+  });
+
+  document.getElementById("resetView").addEventListener("click", resetView);
+
+  setInterval(() => {
+    if (socket && connected) {
+      socket.emit("requestInk");
+    }
+  }, 5000);
+
+  makePalette();
+  resizeCanvas();
+
+  window.addEventListener("resize", resizeCanvas);
+
+  connect();
+})();
+</script>
+</body>
+</html>
