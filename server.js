@@ -19,7 +19,7 @@ const BOARD_FILE = path.join(DATA_DIR, "board.json");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
 
 app.get("/api/status", (req, res) => {
   res.json({
